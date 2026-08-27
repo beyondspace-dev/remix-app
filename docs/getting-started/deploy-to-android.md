@@ -154,16 +154,13 @@ Multiple Android devices are connected. Specify one with --device <serial>.
 
 `--no-build`를 제거하거나 먼저 `npm run build`를 실행합니다. config의 `name` 또는 `version`을 바꿨다면 출력 filename도 바뀝니다.
 
-## 배포 범위
+## Device Owner QR provisioning
 
-현재 이 문서가 설명하는 것은 USB 또는 network ADB가 연결된 개발 기기에 대한 project deploy입니다. 다음 항목은 별도의 운영 배포 체계가 필요한 영역입니다.
+remixApp의 [Github releases](https://github.com/hinaple/remix-app/releases)에 Device Owner provisioning QR 이미지가 자동으로 생성 및 업로드됩니다.
 
-- production signing Host APK 배포
-- Device Owner QR provisioning payload 생성
-- 원격 project 전송 또는 OTA
-- project signing, encryption, rollback
+공장 초기화 직후의 기기에 설치 시 사용할 수 있습니다. [관련 설명](https://developers.google.com/android/work/play/emm-api/prov-devices?hl=ko#qr_code_method)
 
-Host에는 Device Admin receiver와 provisioning activity가 있지만, 현재 CLI는 production QR 생성이나 원격 release 다운로드를 제공하지 않습니다.
+CLI 도구에서는 아직 APK 설치나 Device Owner 지정 등의 기능을 지원하지 않습니다.
 
 ## 관련 문서
 

@@ -37,6 +37,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
     "concurrently": "^10.0.5",
+    "qrcode": "^1.5.4",
     "typescript": "^5.8.3"
   },
   "pnpm": {
