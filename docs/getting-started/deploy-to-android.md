@@ -156,7 +156,7 @@ Multiple Android devices are connected. Specify one with --device <serial>.
 
 ## Device Owner QR provisioning
 
-remixApp의 [Github releases](https://github.com/hinaple/remix-app/releases)에 Device Owner provisioning QR 이미지가 자동으로 생성 및 업로드됩니다.
+remixApp의 [Github releases](https://github.com/beyondspace-dev/remix-app/releases)에 Device Owner provisioning QR 이미지가 자동으로 생성 및 업로드됩니다.
 
 공장 초기화 직후의 기기에 설치 시 사용할 수 있습니다. [관련 설명](https://developers.google.com/android/work/play/emm-api/prov-devices?hl=ko#qr_code_method)
 

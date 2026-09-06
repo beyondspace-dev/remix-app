@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hinaple/remix-app.git",
+    "url": "git+https://github.com/beyondspace-dev/remix-app.git",
     "directory": "packages/create-remixapp"
   },
-  "homepage": "https://github.com/hinaple/remix-app#readme",
+  "homepage": "https://github.com/beyondspace-dev/remix-app#readme",
   "bugs": {
-    "url": "https://github.com/hinaple/remix-app/issues"
+    "url": "https://github.com/beyondspace-dev/remix-app/issues"
   },
   "scripts": {
     "build": "tsup",
