@@ -99,7 +99,9 @@ export class RemixProjectRuntime {
       );
       await keyboardLayout?.dispose();
       await subscriptions.clear();
-      await clearProjectPolicy(actions);
+      await clearProjectPolicy(actions).catch((cleanupError) => {
+        console.warn("Failed to clear project policy", cleanupError);
+      });
       clearHostPanel(this.options.hostPanel);
       removeStyles(styleLinks);
       clearProjectMountHost(this.container);

@@ -19,6 +19,7 @@ import android.net.Uri
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import androidx.core.view.WindowCompat
@@ -32,6 +33,8 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
+
+private const val TAG = "RemixCore"
 
 class RemixCore(private val activity: Activity) {
     private val context = activity.applicationContext
@@ -207,12 +210,25 @@ class RemixCore(private val activity: Activity) {
     fun setKioskMode(enabled: Boolean): KioskState {
         if (enabled) {
             setShowOverLockScreen(true)
-            setKeyguardDisabled(true)
+            val deviceOwner = devicePolicyManager.isDeviceOwnerApp(context.packageName)
+            if (deviceOwner) {
+                setKeyguardDisabled(true)
+                allowOwnLockTaskPackage()
+            } else {
+                Log.w(
+                    TAG,
+                    "Kiosk degraded because Device Owner is unavailable; " +
+                        "keyguard control and self-allowlisting were skipped",
+                )
+            }
             wakeScreen()
-            allowOwnLockTaskPackage()
             val permitted = devicePolicyManager.isLockTaskPermitted(context.packageName)
 
-            if (permitted && !isLockTaskActive()) {
+            if (!permitted) {
+                return KioskState(isLockTaskActive(), false)
+            }
+
+            if (!isLockTaskActive()) {
                 runOnUiThreadBlocking {
                     activity.startLockTask()
                 }
@@ -341,7 +357,18 @@ class RemixCore(private val activity: Activity) {
             return
         }
 
-        Settings.System.putString(context.contentResolver, name, value)
+        if (!Settings.System.canWrite(context)) {
+            Log.w(TAG, "System setting skipped because WRITE_SETTINGS is not granted: $name")
+            return
+        }
+
+        try {
+            if (!Settings.System.putString(context.contentResolver, name, value)) {
+                Log.w(TAG, "System setting update was rejected: $name")
+            }
+        } catch (exception: SecurityException) {
+            Log.w(TAG, "System setting skipped because WRITE_SETTINGS is unavailable: $name", exception)
+        }
     }
 
     private fun readAutoBrightness(): Boolean {
