@@ -134,12 +134,13 @@ project reset, 교체 또는 Host exit 시 다음 순서로 stop합니다.
 1. runtime이 current project 참조를 비웁니다.
 2. native runtime mounted state를 `false`로 바꿉니다.
 3. `project:lifecycle`의 `destroyed`를 emit합니다.
-4. project `mount`가 반환한 cleanup을 await합니다.
-5. context subscription scope를 일괄 정리합니다.
-6. keyboard layout을 dispose합니다.
-7. kiosk, input, orientation, keyboard, timeout, system UI와 screen policy를 해제합니다.
-8. project가 만든 Host panel 내용을 지웁니다.
-9. project stylesheet와 mount container 내용을 제거합니다.
+4. `context.lifecycle`을 취소합니다.
+5. project `mount`가 반환한 cleanup을 await합니다.
+6. context subscription scope를 일괄 정리합니다.
+7. keyboard layout을 dispose합니다.
+8. kiosk, input, orientation, keyboard, timeout, system UI와 screen policy를 해제합니다.
+9. project가 만든 Host panel 내용을 지웁니다.
+10. project stylesheet와 mount container 내용을 제거합니다.
 
 cleanup이 throw하더라도 Host는 `finally` chain을 통해 context와 Host-owned 자원 정리를 계속 시도합니다. project cleanup error 자체는 여전히 호출한 reset/stop 흐름의 실패 원인이 될 수 있으므로 cleanup은 반복 호출에 안전하고 가능한 한 실패하지 않게 작성합니다.
 
@@ -148,6 +149,8 @@ cleanup이 throw하더라도 Host는 `finally` chain을 통해 context와 Host-o
 Host project scope가 소유하므로 unmount 시 자동으로 정리됩니다.
 
 - `context.events.on()` 구독
+- `context.lifecycle.setTimeout()`과 `setInterval()` timer
+- `context.lifecycle.signal`을 사용하는 취소 가능 작업
 - 해당 event source가 연 status listener와 native plugin listener
 - project-owned Host panel 내용
 - Host가 load한 `src/style.css`
@@ -162,7 +165,7 @@ Host project scope가 소유하므로 unmount 시 자동으로 정리됩니다.
 context 밖에서 project code가 만든 자원은 Host subscription scope에 등록되지 않습니다.
 
 - `window`/`document` global listener
-- interval, long timeout, `requestAnimationFrame` loop
+- `window.setInterval()`, `window.setTimeout()`, `requestAnimationFrame` loop
 - WebSocket, EventSource, 직접 생성한 MQTT client
 - external store/event emitter subscription
 - observer (`ResizeObserver`, `MutationObserver`, `IntersectionObserver`)
@@ -175,11 +178,10 @@ export const mount: RemixAppMount = (container, context) => {
   const observer = new ResizeObserver(layout);
   observer.observe(container);
 
-  const timer = window.setInterval(updateClock, 1000);
+  context.lifecycle.setInterval(updateClock, 1000); // Host가 자동 정리
 
   return () => {
     observer.disconnect();
-    window.clearInterval(timer);
   };
 };
 ```

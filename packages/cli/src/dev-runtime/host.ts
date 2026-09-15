@@ -140,6 +140,7 @@ class RemixDevHost implements RemixDevHostController {
 
     this.mounted = false;
     this.events.emit("project:lifecycle", { state: "destroyed" });
+    this.projectSubscriptions.abort();
 
     try {
       await this.projectUnmount?.();
@@ -192,6 +193,7 @@ class RemixDevHost implements RemixDevHostController {
     });
 
     return {
+      lifecycle: subscriptions.lifecycle,
       project: {
         name: this.options.manifest.name,
         version: this.options.manifest.version,

@@ -16,6 +16,7 @@ export const mount: RemixAppMount = async (container, context) => {
 
 | 영역 | 용도 |
 | --- | --- |
+| `context.lifecycle` | 현재 mount에 속한 timer와 비동기 작업 취소 signal |
 | `context.project` | 현재 프로젝트 metadata, manifest, reset |
 | `context.constants` | Host가 결정한 현재 기기의 Constant 값 |
 | `context.resources` | `.remixprj`의 `resources/` URL 생성 |
@@ -23,6 +24,28 @@ export const mount: RemixAppMount = async (container, context) => {
 | `context.events` | 기기 상태, key, lifecycle, MQTT event 구독 |
 | `context.mqtt` | manifest에 선언된 MQTT 상태 확인과 publish |
 | `context.host` | Host admin panel에 프로젝트별 control 표시 |
+
+## lifecycle
+
+`context.lifecycle`로 만든 timer는 현재 project가 unmount, reset, 교체되거나 mount에 실패하면 자동으로 취소됩니다. 반환된 함수로 실행 중에 먼저 취소할 수도 있습니다.
+
+```ts
+const stopClock = context.lifecycle.setInterval(updateClock, 1000);
+const cancelIntro = context.lifecycle.setTimeout(showIntro, 5000);
+
+stopClock();
+cancelIntro();
+```
+
+취소를 지원하는 비동기 API에는 현재 mount의 `AbortSignal`을 전달합니다.
+
+```ts
+const response = await fetch(context.resources.url("data/scenes.json"), {
+  signal: context.lifecycle.signal,
+});
+```
+
+이 lifecycle은 한 번의 project mount 범위입니다. Activity의 `paused`/`resumed` 상태에서는 유지되고 `destroyed` 뒤에는 취소됩니다. 일반 `Promise` 자체는 취소할 수 없으므로 별도의 `safePromise` API는 제공하지 않습니다.
 
 ## project
 

@@ -43,6 +43,7 @@ export type {
   RemixAppMount,
   RemixAppUnmount,
   RemixConstantsContext,
+  RemixLifecycleContext,
 } from "./context";
 
 export type {

@@ -3,6 +3,7 @@ import type {
   RemixAppContext,
   RemixConstantsContext,
   RemixHostPanelContext,
+  RemixLifecycleContext,
   RemixProjectManifest,
 } from "@remixapp/sdk";
 
@@ -17,6 +18,7 @@ export interface ProjectContextOptions {
   manifest: RemixProjectManifest;
   baseUrl: string;
   events: EventBus;
+  lifecycle: RemixLifecycleContext;
   nativeEvents: NativeProjectEventBindings;
   actions: ProjectActionClient;
   constants: RemixConstantsContext;
@@ -26,6 +28,7 @@ export function createProjectContext(
   options: ProjectContextOptions,
 ): RemixAppContext {
   return {
+    lifecycle: options.lifecycle,
     project: {
       name: options.manifest.name,
       version: options.manifest.version,

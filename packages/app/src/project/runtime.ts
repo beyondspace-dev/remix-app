@@ -54,6 +54,7 @@ export class RemixProjectRuntime {
       );
       const context = createProjectContext({
         manifest,
+        lifecycle: subscriptions.lifecycle,
         constants: Object.fromEntries(
           configuration.constants.flatMap((constant) =>
             constant.value === undefined ? [] : [[constant.id, constant.value]],
@@ -121,6 +122,7 @@ export class RemixProjectRuntime {
       () => undefined,
     );
     current.events.emit("project:lifecycle", { state: "destroyed" });
+    current.subscriptions.abort();
 
     try {
       await current.unmount?.();
