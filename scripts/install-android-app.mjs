@@ -24,6 +24,7 @@ const apkPath = join(
   "app-debug.apk",
 );
 const installAll = process.argv.includes("--all");
+const setDeviceOwner = !process.argv.includes("--no-device-owner");
 
 if (!existsSync(apkPath)) {
   fail(`APK not found: ${apkPath}\nRun "pnpm android:build" first.`);
@@ -48,7 +49,7 @@ try {
     : [await selectAndroidDevice(devices)];
   for (const device of targets) {
     console.log(`Installing ${apkPath} to ${device.serial}`);
-    installAndLaunchAndroidHost(adb, device.serial, apkPath);
+    installAndLaunchAndroidHost(adb, device.serial, apkPath, setDeviceOwner);
   }
 } catch (error) {
   fail(error instanceof Error ? error.message : String(error));
