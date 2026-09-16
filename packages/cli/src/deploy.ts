@@ -1,7 +1,12 @@
-import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { createReadStream, existsSync } from "node:fs";
+import { stat } from "node:fs/promises";
 import path from "node:path";
 
-import { deployProjectPackage } from "@remixapp/manager";
+import {
+  deployProject as deployProjectToDevice,
+  deployProjectPackageLegacy,
+} from "@remixapp/manager";
 
 import {
   listAndroidDevices,
@@ -18,6 +23,7 @@ export interface DeployOptions {
   cwd: string;
   device?: string;
   build?: boolean;
+  legacy?: boolean;
 }
 
 export async function deployProject(options: DeployOptions): Promise<void> {
@@ -30,11 +36,23 @@ export async function deployProject(options: DeployOptions): Promise<void> {
       ? await resolveExistingPackage(cwd)
       : await buildProject({ cwd });
 
-  await deployProjectPackage({
-    adbPath: adb,
-    deviceSerial: device.serial,
-    packagePath,
-  });
+  if (options.legacy) {
+    await deployProjectPackageLegacy({
+      adbPath: adb,
+      deviceSerial: device.serial,
+      packagePath,
+    });
+  } else {
+    const packageStat = await stat(packagePath);
+    const sha256 = await hashFile(packagePath);
+    await deployProjectToDevice({
+      adbPath: adb,
+      deviceSerial: device.serial,
+      source: createReadStream(packagePath),
+      size: packageStat.size,
+      sha256,
+    });
+  }
 
   console.log(`Deployed ${packagePath} to ${device.serial}`);
 }
@@ -54,4 +72,12 @@ async function resolveExistingPackage(cwd: string): Promise<string> {
   }
 
   return packagePath;
+}
+
+async function hashFile(filePath: string): Promise<string> {
+  const hash = createHash("sha256");
+  for await (const chunk of createReadStream(filePath)) {
+    hash.update(chunk);
+  }
+  return hash.digest("hex");
 }

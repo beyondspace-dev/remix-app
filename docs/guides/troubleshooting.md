@@ -220,7 +220,13 @@ CI나 redirected terminal에서는 번호 prompt를 사용할 수 없으므로 s
 
 ### `run-as com.fainthit.remix` 실패
 
-현재 project deploy는 Host private directory에 접근하는 개발 흐름입니다. 설치된 Host가 `run-as`를 허용하는 build인지 확인합니다. production/non-debuggable Host 배포 수단으로 사용하지 않습니다.
+`run-as`는 `remix-cli deploy --legacy`에서만 사용합니다. debuggable Host인지 확인하거나 `--legacy`를 제거하고 최신 Host의 stream deploy를 사용합니다.
+
+### Deploy server 연결 시간 초과
+
+- 기기에 stream deploy server가 포함된 최신 Host가 설치되어 있는지 확인합니다.
+- `adb -s <serial> forward --list`가 동작하는지 확인합니다.
+- Host를 직접 실행한 뒤 다시 배포합니다.
 
 ### Host APK가 없음
 

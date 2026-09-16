@@ -34,6 +34,7 @@ import androidx.core.view.ViewCompat
 @CapacitorPlugin(name = "RemixCore")
 class RemixCorePlugin : Plugin() {
     private lateinit var implementation: RemixCore
+    private lateinit var deployServer: RemixDeployServer
     private lateinit var vibration: RemixVibrationController
     private var batteryReceiver: BroadcastReceiver? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -92,6 +93,17 @@ class RemixCorePlugin : Plugin() {
         exitAppScheduled = false
         RemixMqttRuntime.addListener(mqttListener)
         RemixForegroundService.syncActiveProject(context)
+        deployServer = RemixDeployServer(
+            context = context,
+            install = { path -> implementation.installProjectPackage(path) },
+            onInstalled = {
+                activity.runOnUiThread {
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        activity.recreate()
+                    }
+                }
+            },
+        ).also { it.start() }
     }
 
     @PluginMethod
@@ -467,6 +479,7 @@ class RemixCorePlugin : Plugin() {
     }
 
     override fun handleOnDestroy() {
+        if (::deployServer.isInitialized) deployServer.close()
         vibration.close()
         nativeEventEngine.close()
         stopBatteryStatusUpdatesSilently()

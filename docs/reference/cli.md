@@ -74,15 +74,16 @@ manifest, CSS 병합, asset 또는 resources 복사 문제를 확인할 때 사�
 ## deploy
 
 ```text
-remix-cli deploy [--cwd <path>] [--device <serial>] [--no-build]
+remix-cli deploy [--cwd <path>] [--device <serial>] [--no-build] [--legacy]
 ```
 
 | 옵션                | 설명                                                              |
 | ------------------- | ----------------------------------------------------------------- |
 | `--device <serial>` | `adb devices`에 표시되는 Android device serial입니다.             |
 | `--no-build`        | 새로 빌드하지 않고 `dist/<name>-<version>.remixprj`를 사용합니다. |
+| `--legacy`          | 개발용 Host의 기존 `run-as` 배포 경로를 사용합니다.               |
 
-기본적으로 deploy는 프로젝트를 먼저 빌드합니다. 그 뒤 ADB로 package를 기기에 전송하고 `com.fainthit.remix` Host의 active project로 교체한 다음 Host Activity를 시작합니다.
+기본적으로 deploy는 프로젝트를 먼저 빌드합니다. 그 뒤 ADB port forwarding으로 Host의 로컬 deploy socket에 package stream을 전송하고, SHA-256을 확인한 다음 active project를 교체합니다.
 
 ```sh
 remix-cli deploy --device R3CN30ABCDE
@@ -93,7 +94,7 @@ remix-cli deploy --device R3CN30ABCDE
 - Android Host가 기기에 설치되어 있어야 합니다.
 - USB debugging 또는 접근 가능한 ADB 연결이 필요합니다.
 - `adb devices`에서 기기가 `device` 상태로 보여야 합니다.
-- 현재 deploy 구현은 Host private directory에 `run-as com.fainthit.remix`로 접근하므로 개발용으로 접근 가능한 Host build가 필요합니다.
+- stream deploy server가 포함된 최신 Host가 필요합니다. 이전 debuggable Host는 `--legacy`로만 배포할 수 있습니다.
 
 기기가 여러 대이고 `--device`를 생략하면 CLI가 번호 목록을 표시하고 선택을 요청합니다. 비대화형 환경이나 자동화에서는 `--device`를 명시하세요.
 
@@ -119,7 +120,8 @@ npm run deploy
 | generated JS entry 없음     | Vite output을 바꾸는 사용자 설정을 확인합니다.                       |
 | Android device 없음         | `adb devices`와 USB debugging 승인을 확인합니다.                     |
 | package 없음과 `--no-build` | `npm run build` 후 다시 배포합니다.                                  |
-| `run-as` 실패               | 설치된 Host가 현재 개발 deploy 흐름을 허용하는 build인지 확인합니다. |
+| deploy server 시간 초과     | 최신 Host 설치 여부와 `adb forward` 지원 여부를 확인합니다.          |
+| `--legacy`의 `run-as` 실패  | debuggable Host인지 확인하거나 기본 stream deploy를 사용합니다.      |
 
 ## 관련 문서
 
