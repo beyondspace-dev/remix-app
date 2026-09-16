@@ -52,11 +52,9 @@ if (schema !== 1) {
   throw new Error("Invalid Schema Version");
 }
 
-if (!isCheck) {
-  const apkName = path.basename(apkFile);
-  if (path.extname(apkName).toLowerCase() !== ".apk") {
-    throw new Error("Unexpected APK file extension");
-  }
+const apkName = isCheck ? "test.apk" : path.basename(apkFile);
+if (path.extname(apkName).toLowerCase() !== ".apk") {
+  throw new Error("Unexpected APK file extension");
 }
 
 const managerCompatibility = config.managerCompatibility.replace(
