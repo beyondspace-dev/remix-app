@@ -50,6 +50,7 @@
     "vite": "^7.0.0"
   },
   "devDependencies": {
+    "@remixapp/manager": "workspace:*",
     "@remixapp/runtime": "0.3.1",
     "@types/archiver": "^6.0.3",
     "@types/node": "^24.0.0",

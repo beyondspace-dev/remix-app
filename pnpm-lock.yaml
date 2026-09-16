@@ -66,6 +66,9 @@ importers:
         specifier: ^7.0.0
         version: 7.3.6(@types/node@24.13.2)
     devDependencies:
+      '@remixapp/manager':
+        specifier: workspace:*
+        version: link:../manager
       '@remixapp/runtime':
         specifier: 0.3.1
         version: link:../runtime
@@ -99,6 +102,15 @@ importers:
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.23)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  packages/manager:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.13.2
       typescript:
         specifier: ^5.8.3
         version: 5.9.3

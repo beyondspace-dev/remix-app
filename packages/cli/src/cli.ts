@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { ManagerError } from '@remixapp/manager'
+
 import { buildProject } from './build.js'
 import { devProject } from './dev.js'
 import { deployProject } from './deploy.js'
@@ -188,7 +190,11 @@ Usage:
 }
 
 main().catch((error: unknown) => {
-  if (error instanceof RemixCliError || error instanceof AndroidToolsError) {
+  if (
+    error instanceof RemixCliError ||
+    error instanceof AndroidToolsError ||
+    error instanceof ManagerError
+  ) {
     console.error(`Error: ${error.message}`)
     process.exitCode = 1
     return
