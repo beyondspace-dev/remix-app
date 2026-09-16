@@ -12,7 +12,7 @@ export default defineConfig([
     sourcemap: true,
     clean: true,
     splitting: false,
-    noExternal: ["@remixapp/runtime"],
+    noExternal: ["@remixapp/manager", "@remixapp/runtime"],
     external: ["@remixapp/sdk", "archiver", "vite"],
   },
   {

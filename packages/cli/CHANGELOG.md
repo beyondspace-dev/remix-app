@@ -1,5 +1,17 @@
 # @remixapp/cli
 
+## 0.4.0
+
+### Minor Changes
+
+- 307f2ad: production Host를 지원하는 ADB stream project deploy 추가
+- 9e6a60c: 프로젝트 lifecycle에 자동으로 정리되는 timer와 비동기 작업용 AbortSignal 추가
+
+### Patch Changes
+
+- Updated dependencies [9e6a60c]
+  - @remixapp/sdk@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes

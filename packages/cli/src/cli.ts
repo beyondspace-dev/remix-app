@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { ManagerError } from '@remixapp/manager'
+
 import { buildProject } from './build.js'
 import { devProject } from './dev.js'
 import { deployProject } from './deploy.js'
@@ -66,10 +68,12 @@ function parseDeployOptions(args: string[]): {
   cwd: string
   device?: string
   build: boolean
+  legacy: boolean
 } {
   let cwd = process.cwd()
   let device: string | undefined
   let build = true
+  let legacy = false
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
@@ -103,10 +107,15 @@ function parseDeployOptions(args: string[]): {
       continue
     }
 
+    if (arg === '--legacy') {
+      legacy = true
+      continue
+    }
+
     throw new RemixCliError(`Unknown option: ${arg}`)
   }
 
-  return { cwd, device, build }
+  return { cwd, device, build, legacy }
 }
 
 function parseDevOptions(args: string[]): {
@@ -182,13 +191,17 @@ function printHelp(): void {
 
 Usage:
   remix-cli build [--cwd <path>] [--unpack]
-  remix-cli deploy [--cwd <path>] [--device <serial>] [--no-build]
+  remix-cli deploy [--cwd <path>] [--device <serial>] [--no-build] [--legacy]
   remix-cli dev [--cwd <path>] [--host [host]] [--port <port>] [--open]
 `)
 }
 
 main().catch((error: unknown) => {
-  if (error instanceof RemixCliError || error instanceof AndroidToolsError) {
+  if (
+    error instanceof RemixCliError ||
+    error instanceof AndroidToolsError ||
+    error instanceof ManagerError
+  ) {
     console.error(`Error: ${error.message}`)
     process.exitCode = 1
     return

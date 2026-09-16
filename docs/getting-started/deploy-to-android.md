@@ -4,13 +4,13 @@
 
 ## 준비할 것
 
-- Android 기기에 설치된 개발용 remixApp Host
+- Android 기기에 설치된 최신 remixApp Host
 - 기기에서 활성화한 개발자 옵션과 USB debugging
 - PC에 설치된 Android SDK platform-tools
 - `adb devices`에서 `device` 상태로 보이는 기기
 - 빌드 가능한 remixApp 프로젝트
 
-Host application ID는 `com.fainthit.remix`입니다. 현재 CLI는 `run-as com.fainthit.remix`를 사용해 Host private directory에 package를 복사하므로, 이 명령을 허용하는 개발용 Host build가 설치되어 있어야 합니다.
+Host application ID는 `com.fainthit.remix`입니다. CLI는 ADB port forwarding으로 Host의 로컬 deploy socket에 package stream을 전달하므로 production-signing 또는 non-debuggable Host에도 배포할 수 있습니다.
 
 ## 기기 연결 확인
 
@@ -54,11 +54,11 @@ remix-cli deploy
 기본 흐름은 다음과 같습니다.
 
 1. 현재 `remix.config.ts/js`를 사용해 프로젝트를 빌드합니다.
-2. `dist/<name>-<version>.remixprj`를 기기의 임시 경로로 전송합니다.
-3. Host private import directory로 package를 복사합니다.
+2. Host를 시작하고 ADB port forwarding으로 로컬 deploy socket에 연결합니다.
+3. package stream을 Host cache에 쓰면서 송수신 양쪽에서 SHA-256을 계산합니다.
 4. package를 staging directory에 unpack합니다.
 5. 기존 active project를 새 project로 교체합니다.
-6. Host의 `MainActivity`를 package install intent와 함께 시작합니다.
+6. Host를 다시 로드해 새 active project를 시작합니다.
 
 성공하면 CLI에 다음과 비슷한 메시지가 표시됩니다.
 
@@ -142,9 +142,9 @@ Multiple Android devices are connected. Specify one with --device <serial>.
 
 `--device`를 명시합니다.
 
-### `run-as` 실패
+### Deploy server 연결 시간 초과
 
-설치된 `com.fainthit.remix`가 `run-as` 접근을 허용하는 개발 build인지 확인합니다. production-signing 또는 non-debuggable Host에 대한 일반 배포 채널로 `remix-cli deploy`를 가정하면 안 됩니다.
+기기에 최신 Host가 설치되어 있고 `adb forward`를 지원하는지 확인합니다. 이전 개발용 Host를 임시로 사용해야 한다면 `remix-cli deploy --legacy`를 사용할 수 있습니다. `--legacy`는 `run-as com.fainthit.remix`를 허용하는 debuggable Host에서만 동작합니다.
 
 ### Host package가 설치되지 않음
 
@@ -154,16 +154,13 @@ Multiple Android devices are connected. Specify one with --device <serial>.
 
 `--no-build`를 제거하거나 먼저 `npm run build`를 실행합니다. config의 `name` 또는 `version`을 바꿨다면 출력 filename도 바뀝니다.
 
-## 배포 범위
+## Device Owner QR provisioning
 
-현재 이 문서가 설명하는 것은 USB 또는 network ADB가 연결된 개발 기기에 대한 project deploy입니다. 다음 항목은 별도의 운영 배포 체계가 필요한 영역입니다.
+remixApp의 [Github releases](https://github.com/beyondspace-dev/remix-app/releases)에 Device Owner provisioning QR 이미지가 자동으로 생성 및 업로드됩니다.
 
-- production signing Host APK 배포
-- Device Owner QR provisioning payload 생성
-- 원격 project 전송 또는 OTA
-- project signing, encryption, rollback
+공장 초기화 직후의 기기에 설치 시 사용할 수 있습니다. [관련 설명](https://developers.google.com/android/work/play/emm-api/prov-devices?hl=ko#qr_code_method)
 
-Host에는 Device Admin receiver와 provisioning activity가 있지만, 현재 CLI는 production QR 생성이나 원격 release 다운로드를 제공하지 않습니다.
+CLI 도구에서는 아직 APK 설치나 Device Owner 지정 등의 기능을 지원하지 않습니다.
 
 ## 관련 문서
 

@@ -10,6 +10,9 @@ import android.content.pm.PermissionInfo;
 import android.os.Build;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class RemixPermissionManager {
     private static final String TAG = "RemixPermissions";
 
@@ -25,52 +28,56 @@ public final class RemixPermissionManager {
         }
 
         ComponentName admin = new ComponentName(context, RemixDeviceAdminReceiver.class);
+        for (String permission : getMissingDeclaredRuntimePermissions(context)) {
+            grantRuntimePermission(context, devicePolicyManager, admin, permission);
+        }
+    }
+
+    static String[] getMissingDeclaredRuntimePermissions(Context context) {
         PackageManager packageManager = context.getPackageManager();
+        List<String> permissions = new ArrayList<>();
 
         try {
             PackageInfo packageInfo = getPackageInfo(packageManager, context.getPackageName());
             if (packageInfo.requestedPermissions == null) {
-                return;
+                return new String[0];
             }
 
             for (String permission : packageInfo.requestedPermissions) {
-                grantIfRuntimePermission(
-                    context,
-                    devicePolicyManager,
-                    admin,
-                    packageManager,
-                    permission
-                );
+                if (
+                    Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission) &&
+                    Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2
+                ) {
+                    continue;
+                }
+
+                if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+                    continue;
+                }
+
+                try {
+                    PermissionInfo permissionInfo = getPermissionInfo(packageManager, permission);
+                    if (getBaseProtection(permissionInfo) == PermissionInfo.PROTECTION_DANGEROUS) {
+                        permissions.add(permission);
+                    }
+                } catch (PackageManager.NameNotFoundException ignored) {
+                    // The permission does not exist on this Android version.
+                }
             }
         } catch (PackageManager.NameNotFoundException exception) {
             Log.e(TAG, "Unable to inspect declared permissions", exception);
         }
+
+        return permissions.toArray(new String[0]);
     }
 
-    private static void grantIfRuntimePermission(
+    private static void grantRuntimePermission(
         Context context,
         DevicePolicyManager devicePolicyManager,
         ComponentName admin,
-        PackageManager packageManager,
         String permission
     ) {
-        if (
-            Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission) &&
-            Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2
-        ) {
-            return;
-        }
-
-        if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
         try {
-            PermissionInfo permissionInfo = getPermissionInfo(packageManager, permission);
-            if (getBaseProtection(permissionInfo) != PermissionInfo.PROTECTION_DANGEROUS) {
-                return;
-            }
-
             boolean granted = devicePolicyManager.setPermissionGrantState(
                 admin,
                 context.getPackageName(),
@@ -84,8 +91,6 @@ public final class RemixPermissionManager {
             ) {
                 Log.w(TAG, "Permission was not granted: " + permission);
             }
-        } catch (PackageManager.NameNotFoundException ignored) {
-            // The permission does not exist on this Android version.
         } catch (SecurityException exception) {
             Log.e(TAG, "Device Owner cannot grant permission: " + permission, exception);
         }

@@ -29,6 +29,11 @@ const steps = [
     "check",
   ]),
 
+  commandStep("release manifest", node, [
+    "scripts/release/release-manifest.mjs",
+    "--check",
+  ]),
+
   ...(hasPendingChangesets
     ? [pnpmStep("changesets", ["exec", "changeset", "status"])]
     : []),

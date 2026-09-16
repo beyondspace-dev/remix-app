@@ -88,11 +88,35 @@ jobs:
 
           $apk = "packages/app/android/app/build/outputs/apk/release/app-release.apk"
           $releaseApk = "$env:RUNNER_TEMP\remixapp-host-$version.apk"
+          $releaseJson = "$env:RUNNER_TEMP\release.json"
+          $provisioningBase = "$env:RUNNER_TEMP\remixapp-device-owner-$version"
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/v$version/remixapp-host-$version.apk"
+
+          $qrUrl = "https://github.com/${{ github.repository }}/releases/download/v$version/remixapp-device-owner-$version.png"
+
+          $releaseNotes = @"
+          ### Device Owner provisioning QR
+
+          ![Device Owner provisioning QR]($qrUrl)
+          "@
 
           Copy-Item $apk $releaseApk
 
+          node scripts/release/provisioning.mjs `
+            "$releaseApk" `
+            "$downloadUrl" `
+            "$provisioningBase"
+
+          node scripts/release/release-manifest.mjs `
+            "$releaseApk" `
+            "$releaseJson"
+
           gh release create "v$version" `
-            $releaseApk `
+            "$releaseApk" `
+            "$releaseJson" `
+            "$provisioningBase.json" `
+            "$provisioningBase.png" `
             --title "remixApp $version" `
+            --notes "$releaseNotes" `
             --generate-notes `
             --target "${{ github.sha }}"

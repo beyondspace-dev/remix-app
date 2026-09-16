@@ -19,7 +19,7 @@ const publicPackages = [
 ];
 const dependencyFields = [
   "dependencies",
-  "devDependencies",
+  // "devDependencies",
   "peerDependencies",
   "optionalDependencies",
 ];

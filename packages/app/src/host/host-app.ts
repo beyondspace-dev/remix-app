@@ -1,4 +1,4 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import { RemixCore } from "@remixapp/core";
 import type {
   RemixDevicePolicyState,
@@ -18,6 +18,10 @@ import {
   type ProjectSource,
 } from "../project/source.js";
 import { createHostPanelContext } from "@remixapp/runtime";
+
+const RemixPermissions = registerPlugin<{
+  prepareStartupPermissions(): Promise<void>;
+}>("RemixPermissions");
 
 declare global {
   interface Window {
@@ -138,6 +142,12 @@ async function startInitialProject(
 ): Promise<void> {
   let source: ProjectSource | undefined;
   try {
+    if (Capacitor.isNativePlatform()) {
+      await RemixPermissions.prepareStartupPermissions().catch((error) => {
+        console.warn("Startup permission request failed", error);
+      });
+    }
+
     source = await resolveProjectSource();
 
     if (!source) {

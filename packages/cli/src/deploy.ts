@@ -1,10 +1,16 @@
-import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { createReadStream, existsSync } from "node:fs";
+import { stat } from "node:fs/promises";
 import path from "node:path";
+
+import {
+  deployProject as deployProjectToDevice,
+  deployProjectPackageLegacy,
+} from "@remixapp/manager";
 
 import {
   listAndroidDevices,
   resolveAdb,
-  run,
   selectAndroidDevice,
 } from "../android-tools/index.mjs";
 
@@ -13,15 +19,11 @@ import { loadRemixConfig } from "./config.js";
 import { RemixCliError } from "./errors.js";
 import { packageFileName } from "./paths.js";
 
-const HOST_PACKAGE = "com.fainthit.remix";
-const HOST_ACTIVITY = "com.fainthit.remix/.MainActivity";
-const DEVICE_IMPORT_DIR = "files/remix/import";
-const DEVICE_TMP_DIR = "/data/local/tmp/remixapp";
-
 export interface DeployOptions {
   cwd: string;
   device?: string;
   build?: boolean;
+  legacy?: boolean;
 }
 
 export async function deployProject(options: DeployOptions): Promise<void> {
@@ -34,10 +36,23 @@ export async function deployProject(options: DeployOptions): Promise<void> {
       ? await resolveExistingPackage(cwd)
       : await buildProject({ cwd });
 
-  const devicePackagePath = installPackageFile(adb, device.serial, packagePath);
-
-  activateProjectPackage(adb, device.serial, devicePackagePath);
-  startHostWithInstall(adb, device.serial, devicePackagePath);
+  if (options.legacy) {
+    await deployProjectPackageLegacy({
+      adbPath: adb,
+      deviceSerial: device.serial,
+      packagePath,
+    });
+  } else {
+    const packageStat = await stat(packagePath);
+    const sha256 = await hashFile(packagePath);
+    await deployProjectToDevice({
+      adbPath: adb,
+      deviceSerial: device.serial,
+      source: createReadStream(packagePath),
+      size: packageStat.size,
+      sha256,
+    });
+  }
 
   console.log(`Deployed ${packagePath} to ${device.serial}`);
 }
@@ -59,84 +74,10 @@ async function resolveExistingPackage(cwd: string): Promise<string> {
   return packagePath;
 }
 
-function installPackageFile(
-  adb: string,
-  device: string,
-  packagePath: string,
-): string {
-  const fileName = path.basename(packagePath);
-  const tmpPath = `${DEVICE_TMP_DIR}/${fileName}`;
-  const appPath = `${DEVICE_IMPORT_DIR}/${fileName}`;
-
-  run(adb, ["-s", device, "shell", "mkdir", "-p", DEVICE_TMP_DIR]);
-  run(adb, ["-s", device, "push", packagePath, tmpPath]);
-  run(adb, ["-s", device, "shell", "chmod", "644", tmpPath]);
-  run(adb, [
-    "-s",
-    device,
-    "shell",
-    "run-as",
-    HOST_PACKAGE,
-    "mkdir",
-    "-p",
-    DEVICE_IMPORT_DIR,
-  ]);
-  run(adb, [
-    "-s",
-    device,
-    "shell",
-    "run-as",
-    HOST_PACKAGE,
-    "cp",
-    tmpPath,
-    appPath,
-  ]);
-  run(adb, ["-s", device, "shell", "rm", "-f", tmpPath]);
-
-  return `/data/data/${HOST_PACKAGE}/${appPath}`;
-}
-
-function activateProjectPackage(
-  adb: string,
-  device: string,
-  packagePath: string,
-): void {
-  const script = [
-    "rm -rf files/remix/projects/staging files/remix/projects/previous",
-    "mkdir -p files/remix/projects/staging",
-    `unzip -oq ${shellQuote(packagePath)} -d files/remix/projects/staging`,
-    "if [ -d files/remix/projects/active ]; then mv files/remix/projects/active files/remix/projects/previous; fi",
-    "mv files/remix/projects/staging files/remix/projects/active",
-    "rm -rf files/remix/projects/previous",
-  ].join(" && ");
-
-  run(adb, [
-    "-s",
-    device,
-    "shell",
-    `run-as ${HOST_PACKAGE} sh -c ${shellQuote(script)}`,
-  ]);
-}
-
-function startHostWithInstall(
-  adb: string,
-  device: string,
-  packagePath: string,
-): void {
-  run(adb, [
-    "-s",
-    device,
-    "shell",
-    "am",
-    "start",
-    "-n",
-    HOST_ACTIVITY,
-    "--es",
-    "remix.install",
-    packagePath,
-  ]);
-}
-
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
+async function hashFile(filePath: string): Promise<string> {
+  const hash = createHash("sha256");
+  for await (const chunk of createReadStream(filePath)) {
+    hash.update(chunk);
+  }
+  return hash.digest("hex");
 }

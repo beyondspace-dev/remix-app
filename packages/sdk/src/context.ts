@@ -1,5 +1,5 @@
 import type { RemixDeviceContext } from './device.js'
-import type { RemixEventContext } from './events.js'
+import type { RemixEventContext, RemixEventUnsubscribe } from './events.js'
 import type { RemixHostContext } from './host.js'
 import type { RemixMqttContext } from './mqtt.js'
 import type { RemixProjectContext } from './project.js'
@@ -37,6 +37,12 @@ export type RemixAppUnmount = () => void | Promise<void>
  */
 export interface RemixAppContext {
   /**
+   * Browser work that is automatically cancelled when this project instance
+   * is unmounted, reset, replaced, or fails to mount.
+   */
+  lifecycle: RemixLifecycleContext
+
+  /**
    * Metadata and manifest information for the currently loaded project.
    */
   project: RemixProjectContext
@@ -73,6 +79,18 @@ export interface RemixAppContext {
    * Host UI and administration controls exposed to project code.
    */
   host: RemixHostContext
+}
+
+/** Browser work owned by the current project mount. */
+export interface RemixLifecycleContext {
+  /** Aborted when the current project mount is no longer active. */
+  readonly signal: AbortSignal
+
+  /** Schedules a one-shot callback and returns a function that cancels it. */
+  setTimeout(callback: () => void, delay: number): RemixEventUnsubscribe
+
+  /** Schedules a repeating callback and returns a function that cancels it. */
+  setInterval(callback: () => void, delay: number): RemixEventUnsubscribe
 }
 
 /** Effective project constants exposed to mounted project code. */

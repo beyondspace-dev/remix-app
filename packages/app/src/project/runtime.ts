@@ -54,6 +54,7 @@ export class RemixProjectRuntime {
       );
       const context = createProjectContext({
         manifest,
+        lifecycle: subscriptions.lifecycle,
         constants: Object.fromEntries(
           configuration.constants.flatMap((constant) =>
             constant.value === undefined ? [] : [[constant.id, constant.value]],
@@ -99,7 +100,9 @@ export class RemixProjectRuntime {
       );
       await keyboardLayout?.dispose();
       await subscriptions.clear();
-      await clearProjectPolicy(actions);
+      await clearProjectPolicy(actions).catch((cleanupError) => {
+        console.warn("Failed to clear project policy", cleanupError);
+      });
       clearHostPanel(this.options.hostPanel);
       removeStyles(styleLinks);
       clearProjectMountHost(this.container);
@@ -119,6 +122,7 @@ export class RemixProjectRuntime {
       () => undefined,
     );
     current.events.emit("project:lifecycle", { state: "destroyed" });
+    current.subscriptions.abort();
 
     try {
       await current.unmount?.();

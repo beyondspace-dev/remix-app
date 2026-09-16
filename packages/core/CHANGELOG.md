@@ -1,5 +1,12 @@
 # @remixapp/core
 
+## 0.4.0
+
+### Minor Changes
+
+- 307f2ad: production Host를 지원하는 ADB stream project deploy 추가
+- 4191ce6: Device owner로 설치되지 않은 경우에도 가능한 정상 작동하도록 변경
+
 ## 0.3.1
 
 ## 0.3.0

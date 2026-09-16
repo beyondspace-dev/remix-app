@@ -1,6 +1,6 @@
 {
   "name": "@remixapp/core",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Native device bridge for the remixApp Host",
   "license": "Apache-2.0",
   "type": "module",
@@ -24,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hinaple/remix-app.git",
+    "url": "git+https://github.com/beyondspace-dev/remix-app.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/hinaple/remix-app#readme",
+  "homepage": "https://github.com/beyondspace-dev/remix-app#readme",
   "bugs": {
-    "url": "https://github.com/hinaple/remix-app/issues"
+    "url": "https://github.com/beyondspace-dev/remix-app/issues"
   },
   "sideEffects": false,
   "scripts": {

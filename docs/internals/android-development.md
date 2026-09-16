@@ -80,7 +80,13 @@ pnpm android:install
 pnpm android:install:all
 ```
 
-`android:install`은 기존 app을 유지한 채 `adb install -r`로 교체하고 Host Activity를 자동으로 다시 시작합니다. application data를 초기화하지 않습니다.
+`android:install`은 기존 app을 유지한 채 `adb install -r`로 교체하고, Host를 Device Owner로 설정한 뒤 Activity를 자동으로 다시 시작합니다. 이미 Host가 Device Owner이면 설정을 반복하지 않습니다. application data를 초기화하지 않습니다.
+
+Device Owner 설정을 건너뛰려면 다음처럼 실행합니다.
+
+```sh
+pnpm android:install -- --no-device-owner
+```
 
 ## Android Studio 사용
 
@@ -184,13 +190,13 @@ Android의 fully managed device provisioning에서는 `RemixProvisioningActivity
 
 권한을 추가하거나 변경할 때는 app manifest뿐 아니라 plugin을 포함한 merged manifest를 기준으로 동작한다는 점을 고려합니다. 자동 승인이 실패하면 `RemixPermissions` tag의 logcat을 확인합니다.
 
-개발 기기가 아직 provision되지 않았고 계정이나 기존 owner가 없는 상태라면 Android의 `dpm set-device-owner`를 사용한 개발 설정을 검토할 수 있습니다.
+`android:install`은 개발 기기가 아직 provision되지 않았고 계정이나 기존 owner가 없는 상태라면 다음 명령을 자동으로 실행합니다.
 
 ```sh
 adb shell dpm set-device-owner com.fainthit.remix/.RemixDeviceAdminReceiver
 ```
 
-이 명령은 이미 설정이 완료된 일반 기기에서는 실패할 수 있습니다. Device Owner 해제나 factory reset은 기기 데이터를 잃을 수 있는 별도 운영 작업이므로, 전용 test device에서만 수행하고 이 문서의 일반 build 단계에 포함하지 않습니다.
+이 명령은 이미 설정이 완료된 일반 기기에서는 실패할 수 있습니다. 그런 기기에 설치만 하려면 `--no-device-owner`를 사용합니다. Device Owner 해제나 factory reset은 기기 데이터를 잃을 수 있는 별도 운영 작업이므로 전용 test device에서만 수행합니다.
 
 ## build 종류 구분
 
