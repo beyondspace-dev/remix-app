@@ -30,8 +30,8 @@
     "android:update": "pnpm run build:app & pnpm cap:sync & pnpm run android:build & pnpm run android:install",
     "changeset": "changeset",
     "changeset:status": "changeset status",
+    "release": "node scripts/release/start.mjs",
     "release:check": "node scripts/release/check.mjs",
-    "release:start": "node scripts/release/start.mjs",
     "release:sync": "node scripts/release/versions.mjs sync"
   },
   "devDependencies": {
