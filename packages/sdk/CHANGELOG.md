@@ -1,5 +1,11 @@
 # @remixapp/sdk
 
+## 0.4.0
+
+### Minor Changes
+
+- 9e6a60c: 프로젝트 lifecycle에 자동으로 정리되는 timer와 비동기 작업용 AbortSignal 추가
+
 ## 0.3.1
 
 ## 0.3.0

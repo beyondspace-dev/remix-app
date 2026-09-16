@@ -57,7 +57,7 @@ importers:
   packages/cli:
     dependencies:
       '@remixapp/sdk':
-        specifier: 0.3.1
+        specifier: 0.4.0
         version: link:../sdk
       archiver:
         specifier: ^7.0.1
@@ -70,7 +70,7 @@ importers:
         specifier: workspace:*
         version: link:../manager
       '@remixapp/runtime':
-        specifier: 0.3.1
+        specifier: 0.4.0
         version: link:../runtime
       '@types/archiver':
         specifier: ^6.0.3

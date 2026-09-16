@@ -1,5 +1,21 @@
 # @remixapp/app
 
+## 0.4.0
+
+### Minor Changes
+
+- 9e6a60c: 프로젝트 lifecycle에 자동으로 정리되는 timer와 비동기 작업용 AbortSignal 추가
+- 4191ce6: Device owner로 설치되지 않은 경우에도 가능한 정상 작동하도록 변경
+
+### Patch Changes
+
+- Updated dependencies [307f2ad]
+- Updated dependencies [9e6a60c]
+- Updated dependencies [4191ce6]
+  - @remixapp/core@0.4.0
+  - @remixapp/sdk@0.4.0
+  - @remixapp/runtime@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes
