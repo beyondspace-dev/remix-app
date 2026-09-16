@@ -63,7 +63,9 @@ export function readJson(file) {
 export function listPendingChangesets(cwd = root) {
   return fs
     .readdirSync(path.join(cwd, ".changeset"))
-    .filter((name) => name.endsWith(".md") && name.toLowerCase() !== "readme.md");
+    .filter(
+      (name) => name.endsWith(".md") && name.toLowerCase() !== "readme.md",
+    );
 }
 
 export function readChangedPaths(cwd = root) {
